@@ -1,12 +1,11 @@
 /// Pure-Dart parsing and aggregation of bank-export CSV files.
 ///
-/// The row format mirrors what `Finances Monitor/Finances_Monitor_v2.0.py`
-/// reads in `read_expenses_grouped`: one transaction per row, columns
-/// `date, amount, description, balance`, no header row. Rows whose first
-/// column is not a date are skipped, only negative amounts count as expenses,
-/// and the description must not be empty. An optional fifth column (E) holds
-/// the expense category, typed by hand or filled in later; the script ignores
-/// it.
+/// The parsing rules were ported from an earlier Python budgeting tool: one
+/// transaction per row, columns `date, amount, description, balance`, no
+/// header row. Rows whose first column is not a date are skipped, only
+/// negative amounts count as expenses, and the description must not be empty.
+/// An optional fifth column (E) holds the expense category, typed by hand or
+/// filled in later.
 library;
 
 const List<String> monthNames = <String>[
@@ -24,8 +23,7 @@ const List<String> monthNames = <String>[
   'December',
 ];
 
-/// Collapses runs of whitespace and trims, like the script's
-/// `normalize_space`.
+/// Collapses runs of whitespace and trims.
 String normalizeSpace(String text) {
   return text
       .trim()
@@ -34,9 +32,8 @@ String normalizeSpace(String text) {
       .join(' ');
 }
 
-/// Parses an amount the way the script's `parse_amount` does: thousands
-/// separators are dropped and `(12.34)` means `-12.34`. Returns null when the
-/// text is not a finite number.
+/// Parses an amount: thousands separators are dropped and `(12.34)` means
+/// `-12.34`. Returns null when the text is not a finite number.
 double? parseAmount(String value) {
   String text = value.trim().replaceAll(',', '');
   if (text.isEmpty) {
@@ -57,9 +54,8 @@ final RegExp _dayMonthShortYear = RegExp(r'^(\d{1,2})/(\d{1,2})/(\d{2})$');
 final RegExp _yearMonthDayDash = RegExp(r'^(\d{4})-(\d{1,2})-(\d{1,2})$');
 final RegExp _yearMonthDaySlash = RegExp(r'^(\d{4})/(\d{1,2})/(\d{1,2})$');
 
-/// Accepts the same formats as the script's `parse_date`
-/// (`%d/%m/%Y`, `%d/%m/%y`, `%Y-%m-%d`, `%Y/%m/%d`). Returns a UTC date at
-/// midnight, or null when the text is not a valid calendar date.
+/// Accepts `%d/%m/%Y`, `%d/%m/%y`, `%Y-%m-%d` and `%Y/%m/%d` dates. Returns a
+/// UTC date at midnight, or null when the text is not a valid calendar date.
 DateTime? parseExpenseDate(String value) {
   final String text = value.trim();
   if (text.isEmpty) {
@@ -216,8 +212,8 @@ const Set<String> _noCategoryLabels = <String>{
   'uncategorized',
 };
 
-/// Converts a CSV row into an expense using the script's rules, or returns
-/// null when the row is a header, a credit, or otherwise not an expense.
+/// Converts a CSV row into an expense, or returns null when the row is a
+/// header, a credit, or otherwise not an expense.
 ExpenseTransaction? transactionFromRow(List<String> row) {
   if (row.isEmpty) {
     return null;
@@ -266,7 +262,7 @@ ExpenseTransaction? transactionFromRow(List<String> row) {
 List<ExpenseTransaction> parseExpenseFile(String content) {
   String text = content;
   if (text.startsWith('\uFEFF')) {
-    text = text.substring(1); // utf-8-sig BOM, as the script tolerates.
+    text = text.substring(1); // UTF-8 BOM, as some exporters write.
   }
   return parseCsv(text)
       .map(transactionFromRow)
@@ -473,9 +469,8 @@ class ExpenseSummary {
       _months.keys.where((YearMonth p) => p.year == year).length;
 
   /// Averages the (up to) [maxMonths] most recent months that have data and
-  /// come before [period]. Months without data are skipped, as the script's
-  /// `get_previous_month_total_values_actuals` does. When fewer months exist
-  /// the average is over those that do.
+  /// come before [period]. Months without data are skipped. When fewer months
+  /// exist the average is over those that do.
   PriorMonthsAverage priorAverage(YearMonth period, {int maxMonths = 3}) {
     final List<MonthExpenses> earlier = _months.values
         .where((MonthExpenses m) => m.period.compareTo(period) < 0)

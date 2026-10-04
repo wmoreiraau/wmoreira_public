@@ -25,7 +25,7 @@ void main() {
   });
 
   group('parseExpenseDate', () {
-    test('accepts the formats the Python script accepts', () {
+    test('accepts day-first and ISO-style date formats', () {
       expect(parseExpenseDate('28/02/2026'), DateTime.utc(2026, 2, 28));
       expect(parseExpenseDate('1/3/2026'), DateTime.utc(2026, 3, 1));
       expect(parseExpenseDate('01/03/26'), DateTime.utc(2026, 3, 1));

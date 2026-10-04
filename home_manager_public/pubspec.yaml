@@ -63,7 +63,7 @@ flutter:
 
   # Bank-export CSV files shown by the Finances screen. Every file in this
   # folder is bundled and read (any file name) as long as it follows the
-  # format that Finances Monitor/Finances_Monitor_v2.0.py reads.
+  # format that lib/expense_data.dart parses.
   assets:
     - Finances Monitor/Expenses/
 

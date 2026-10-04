@@ -26,7 +26,6 @@ lists, and reviewing monthly spending.
 | App | Flutter / Dart (`lib/`) |
 | Auth & data | Firebase Auth, Cloud Firestore (`firestore.rules`) |
 | AI + privileged writes | Cloudflare Worker in TypeScript (`worker/`) that holds the Anthropic API key and a Firebase service account, so neither ships in the client |
-| Finances import | Python + openpyxl desktop tool (`Finances Monitor/`) |
 
 ## Running locally
 

@@ -1,0 +1,3 @@
+# Copy this file to ".dev.vars" (which is gitignored) for local `wrangler dev`.
+# The deployed Worker uses the secret set via `wrangler secret put` instead.
+ANTHROPIC_API_KEY=sk-ant-your-key-here

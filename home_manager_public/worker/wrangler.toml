@@ -1,0 +1,9 @@
+name = "home-manager-lookup"
+main = "src/index.ts"
+compatibility_date = "2026-06-23"
+
+# Secrets (do NOT put the key here):
+#   npx wrangler secret put ANTHROPIC_API_KEY
+# Optional plain var to lock down CORS to your app's origin later:
+# [vars]
+# ALLOWED_ORIGIN = "https://your-app-origin"

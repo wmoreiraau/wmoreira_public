@@ -1,0 +1,53 @@
+rules_version = '2';
+
+// House Manager — Phase 1 security rules.
+// Deploy: Firebase console -> Firestore Database -> Rules -> paste -> Publish.
+//
+// Model:
+//   users/{uid}                       owner-only profile doc
+//   homes/{homeId}                    shared home doc (memberIds gates access)
+//   homes/{homeId}/{subcollection}    issues / shoppingList /
+//                                     recurrentMaintenance / tasks ...
+// Everything not matched below is denied by default.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // A user can read/write only their own profile document.
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /homes/{homeId} {
+      function isMember() {
+        return signedIn() && request.auth.uid in resource.data.memberIds;
+      }
+
+      // Create: only as the owner and the sole member.
+      allow create: if signedIn()
+        && request.auth.uid == request.resource.data.ownerId
+        && request.resource.data.memberIds == [request.auth.uid];
+
+      allow read, delete: if isMember();
+
+      // Update: members only, and clients must not change membership or
+      // ownership — those change only via a server function in Phase 2.
+      allow update: if isMember()
+        && request.resource.data.memberIds == resource.data.memberIds
+        && request.resource.data.ownerId == resource.data.ownerId;
+
+      // All home data (issues, shoppingList, recurrentMaintenance, tasks,
+      // including embedded cached look-up output): members of the parent
+      // home only. The get() costs one extra read per operation — fine for
+      // a two-person app; correctness over micro-optimisation.
+      match /{subcollection}/{docId} {
+        allow read, write: if signedIn()
+          && request.auth.uid in
+            get(/databases/$(database)/documents/homes/$(homeId)).data.memberIds;
+      }
+    }
+  }
+}
